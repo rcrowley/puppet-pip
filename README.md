@@ -16,7 +16,13 @@ Installation
 Example
 -------
 
+Resource:
+
 	package { "httplib2":
 		ensure => "0.6.0",
 		provider => pip,
 	}
+
+Usage:
+
+	RUBYLIB=/usr/lib/ruby/gems/1.8/gems/puppet-pip-0.0.1/lib puppet apply test.pp
