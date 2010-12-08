@@ -19,10 +19,10 @@ Example
 Resource:
 
 	package { "httplib2":
-		ensure => "0.6.0",
+		ensure => latest,
 		provider => pip,
 	}
 
 Usage:
 
-	RUBYLIB=/usr/lib/ruby/gems/1.8/gems/puppet-pip-0.0.1/lib puppet apply test.pp
+	RUBYLIB="$GEM_HOME/1.8/gems/puppet-pip-0.0.2/lib" puppet apply test.pp
