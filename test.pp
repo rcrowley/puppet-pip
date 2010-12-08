@@ -15,6 +15,6 @@ class pre {
 class { "pre": stage => "pre" }
 
 package { "httplib2":
-	ensure => "0.6.0",
+	ensure => latest,
 	provider => pip,
 }

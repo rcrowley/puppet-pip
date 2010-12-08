@@ -1,22 +1,15 @@
-# Puppet package provider for Python's `pip` package management
-# frontend.
+# Puppet package provider for Python's `pip` package management frontend.
 # <http://pip.openplans.org/>
 
 require 'puppet/provider/package'
+require 'xmlrpc/client'
 
 Puppet::Type.type(:package).provide :pip,
   :parent => ::Puppet::Provider::Package do
 
   desc "Python packages via `pip`."
 
-  has_feature :installable, :uninstallable, :versionable
-
-  # Enabling :upgradable and thus the ability to `ensure => latest`
-  # will require talking to the PyPI XMLRPC interface because the
-  # only way to figure out what the latest version number is from
-  # the CLI is to download and unpack it.
-  # <http://wiki.python.org/moin/PyPiXmlRpc>
-  #has_feature :upgradeable
+  has_feature :installable, :uninstallable, :upgradeable, :versionable
 
   if pathname = `which pip`.chomp
     commands :pip => pathname
@@ -53,18 +46,32 @@ Puppet::Type.type(:package).provide :pip,
     nil
   end
 
+  def latest
+    client = XMLRPC::Client.new2("http://pypi.python.org/pypi")
+    client.http_header_extra = {"Content-Type" => "text/xml"}
+    result = client.call("package_releases", @resource[:name])
+    result.first
+  end
+
   def install
-    arg = @resource[:name]
-    if String === @resource[:ensure]
-      arg = "#{arg}==#{@resource[:ensure]}"
+    case @resource[:ensure]
+    when String
+      pip "install", "-q", "#{@resource[:name]}==#{@resource[:ensure]}"
+    when :latest
+      pip "install", "-q", "--upgrade", @resource[:name]
+    else
+      pip "install", "-q", @resource[:name]
     end
-    pip "install", "-q", arg
   end
 
   # Uninstall won't work unless this issue gets fixed.
   # <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=562544>
   def uninstall
     pip "uninstall", "-y", "-q", @resource[:name]
+  end
+
+  def update
+    install
   end
 
 end
