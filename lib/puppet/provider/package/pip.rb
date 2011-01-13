@@ -54,14 +54,26 @@ Puppet::Type.type(:package).provide :pip,
   end
 
   def install
-    case @resource[:ensure]
-    when String
-      pip "install", "-q", "#{@resource[:name]}==#{@resource[:ensure]}"
-    when :latest
-      pip "install", "-q", "--upgrade", @resource[:name]
+    args = %w{install -q}
+    if @resource[:source]
+      args << "-e"
+      if String === @resource[:ensure]
+        args << "#{@resource[:source]}@#{@resource[:ensure]}#egg=#{
+          @resource[:name]}"
+      else
+        args << "#{@resource[:source]}#egg=#{@resource[:name]}"
+      end
     else
-      pip "install", "-q", @resource[:name]
+      case @resource[:ensure]
+      when String
+        args << "#{@resource[:name]}==#{@resource[:ensure]}"
+      when :latest
+        args << "--upgrade" << @resource[:name]
+      else
+        args << @resource[:name]
+      end
     end
+    pip *args
   end
 
   # Uninstall won't work unless this issue gets fixed.

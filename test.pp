@@ -14,7 +14,12 @@ class pre {
 }
 class { "pre": stage => "pre" }
 
-package { "httplib2":
-	ensure => latest,
-	provider => pip,
+package {
+	"httplib2":
+		ensure => latest,
+		provider => pip;
+	"socialregistration":
+		ensure => "317a0dbed71b660c8ec7f7994f3ae42dadf2e992",
+		provider => pip,
+		source => "git+https://github.com/itmustbejj/django-socialregistration.git";
 }
