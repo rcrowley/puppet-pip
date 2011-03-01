@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "puppet-pip"
-  s.version = "0.0.3"
+  s.version = "0.0.4"
   s.date = "2011-03-01"
   s.authors = ["Richard Crowley"]
   s.email = "r@rcrowley.org"
