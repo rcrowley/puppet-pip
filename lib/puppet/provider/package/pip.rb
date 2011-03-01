@@ -11,6 +11,8 @@ Puppet::Type.type(:package).provide :pip,
 
   has_feature :installable, :uninstallable, :upgradeable, :versionable
 
+  # Parse lines of output from `pip freeze`, which are structured as
+  # _package_==_version_.
   def self.parse(line)
     if line.chomp =~ /^([^=]+)==([^=]+)$/
       {:ensure => $2, :name => $1, :provider => name}
@@ -19,6 +21,8 @@ Puppet::Type.type(:package).provide :pip,
     end
   end
 
+  # Return an array of structured information about every installed package
+  # that's managed by `pip` or an empty array if `pip` is not available.
   def self.instances
     packages = []
     execpipe "#{command :pip} freeze" do |process|
@@ -32,6 +36,8 @@ Puppet::Type.type(:package).provide :pip,
     []
   end
 
+  # Return structured information about a particular package or `nil` if
+  # it is not installed or `pip` itself is not available.
   def query
     execpipe "#{command :pip} freeze" do |process|
       process.each do |line|
@@ -44,6 +50,9 @@ Puppet::Type.type(:package).provide :pip,
     nil
   end
 
+  # Ask the PyPI API for the latest version number.  There is no local
+  # cache of PyPI's package list so this operation will always have to
+  # ask the web service.
   def latest
     client = XMLRPC::Client.new2("http://pypi.python.org/pypi")
     client.http_header_extra = {"Content-Type" => "text/xml"}
@@ -51,6 +60,10 @@ Puppet::Type.type(:package).provide :pip,
     result.first
   end
 
+  # Install a package.  The ensure parameter may specify installed,
+  # latest, a version number, or, in conjunction with the source
+  # parameter, an SCM revision.  In that case, the source parameter
+  # gives the fully-qualified URL to the repository.
   def install
     args = %w{install -q}
     if @resource[:source]
@@ -74,7 +87,8 @@ Puppet::Type.type(:package).provide :pip,
     lazy_pip *args
   end
 
-  # Uninstall won't work unless this issue gets fixed.
+  # Uninstall a package.  Uninstall won't work reliably on Debian/Ubuntu
+  # unless this issue gets fixed.
   # <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=562544>
   def uninstall
     lazy_pip "uninstall", "-y", "-q", @resource[:name]
@@ -84,6 +98,8 @@ Puppet::Type.type(:package).provide :pip,
     install
   end
 
+  # Execute a `pip` command.  If Puppet doesn't yet know how to do so,
+  # try to teach it and if even that fails, raise the error.
   private
   def lazy_pip(*args)
     pip *args
