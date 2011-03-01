@@ -106,7 +106,7 @@ Puppet::Type.type(:package).provide :pip,
   rescue NoMethodError => e
     if pathname = `which pip`.chomp
       self.class.commands :pip => pathname
-      retry
+      pip *args
     else
       raise e
     end
