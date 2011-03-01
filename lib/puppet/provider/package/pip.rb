@@ -11,12 +11,6 @@ Puppet::Type.type(:package).provide :pip,
 
   has_feature :installable, :uninstallable, :upgradeable, :versionable
 
-  if pathname = `which pip`.chomp
-    commands :pip => pathname
-  else
-    raise NotImplementedError
-  end
-
   def self.parse(line)
     if line.chomp =~ /^([^=]+)==([^=]+)$/
       {:ensure => $2, :name => $1, :provider => name}
@@ -34,6 +28,8 @@ Puppet::Type.type(:package).provide :pip,
       end
     end
     packages
+  rescue Puppet::DevError
+    []
   end
 
   def query
@@ -43,6 +39,8 @@ Puppet::Type.type(:package).provide :pip,
         return options if options[:name] == @resource[:name]
       end
     end
+    nil
+  rescue Puppet::DevError
     nil
   end
 
@@ -73,17 +71,29 @@ Puppet::Type.type(:package).provide :pip,
         args << @resource[:name]
       end
     end
-    pip *args
+    lazy_pip *args
   end
 
   # Uninstall won't work unless this issue gets fixed.
   # <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=562544>
   def uninstall
-    pip "uninstall", "-y", "-q", @resource[:name]
+    lazy_pip "uninstall", "-y", "-q", @resource[:name]
   end
 
   def update
     install
+  end
+
+  private
+  def lazy_pip(*args)
+    pip *args
+  rescue NoMethodError
+    if pathname = `which pip`.chomp
+      self.class.commands :pip => pathname
+      retry
+    else
+      raise e
+    end
   end
 
 end
