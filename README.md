@@ -25,4 +25,4 @@ Resource:
 
 Usage:
 
-	sudo env RUBYLIB="$GEM_HOME/1.8/gems/puppet-pip-0.0.4/lib" puppet apply test.pp
+	sudo env RUBYLIB="$GEM_HOME/1.8/gems/puppet-pip-0.0.5/lib" puppet apply test.pp
