@@ -103,7 +103,7 @@ Puppet::Type.type(:package).provide :pip,
   private
   def lazy_pip(*args)
     pip *args
-  rescue NoMethodError
+  rescue NoMethodError => e
     if pathname = `which pip`.chomp
       self.class.commands :pip => pathname
       retry
