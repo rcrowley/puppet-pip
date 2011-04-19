@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name = "puppet-pip"
-  s.version = "0.0.5"
-  s.date = "2011-03-01"
+  s.version = "1.0.0"
+  s.date = "2011-04-18"
   s.authors = ["Richard Crowley"]
   s.email = "r@rcrowley.org"
   s.summary = "Puppet provider of Python packages via pip."
